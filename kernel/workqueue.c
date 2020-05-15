@@ -37,6 +37,9 @@
 /*
  * The per-CPU workqueue (if single thread, we always use the first
  * possible cpu).
+ * 管理加入到本地CPU上的work
+ * @worklist: 加入到本地CPU上的work链表
+ * @thread: 本地CPU的工作线程
  */
 struct cpu_workqueue_struct {
 
@@ -128,6 +131,7 @@ struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
 static void insert_work(struct cpu_workqueue_struct *cwq,
 				struct work_struct *work, int tail)
 {
+	/* 将work设置为PENDING 状态 */
 	set_wq_data(work, cwq);
 	/*
 	 * Ensure that we get the right work->data if we see the
@@ -165,7 +169,7 @@ static void __queue_work(struct cpu_workqueue_struct *cwq,
 int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
 {
 	int ret = 0;
-
+	/* 同一个work,如果是PENDING状态，则不能重复提交 */
 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
 		BUG_ON(!list_empty(&work->entry));
 		__queue_work(wq_per_cpu(wq, get_cpu()), work);
@@ -296,6 +300,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
 	spin_unlock_irq(&cwq->lock);
 }
 
+/* work线程处理函数 */
 static int worker_thread(void *__cwq)
 {
 	struct cpu_workqueue_struct *cwq = __cwq;
@@ -303,10 +308,11 @@ static int worker_thread(void *__cwq)
 
 	if (cwq->wq->freezeable)
 		set_freezable();
-
+	/* 提高工作线程的优先级 */
 	set_user_nice(current, -5);
 
 	for (;;) {
+		/* 临时加入到等待队列中 */
 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
 		if (!freezing(current) &&
 		    !kthread_should_stop() &&
@@ -318,7 +324,7 @@ static int worker_thread(void *__cwq)
 
 		if (kthread_should_stop())
 			break;
-
+		/* 处理PENDING状态的work */
 		run_workqueue(cwq);
 	}
 
@@ -685,6 +691,7 @@ init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
 	return cwq;
 }
 
+/* 为本地CPU创建工作线程 */
 static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
 {
 	struct workqueue_struct *wq = cwq->wq;
@@ -713,12 +720,23 @@ static void start_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
 	struct task_struct *p = cwq->thread;
 
 	if (p != NULL) {
+		/* 将创建的线程绑定到cpu上区执行 */
 		if (cpu >= 0)
 			kthread_bind(p, cpu);
+		/* 唤醒工作线程 */
 		wake_up_process(p);
 	}
 }
 
+/*
+ * 创建工作队列
+ * @name: 创建工作线程的名字
+ * @singlethread:
+ * 	0： 在系统的每一个CPU上都创建一个工作线程
+ *      1： 在系统的第一个CPU上创建一个工作线程
+ * @freezeable:freezeable属性表示在suspend的时候
+ *             是否冻结该工作队列的内核线程
+ */
 struct workqueue_struct *__create_workqueue_key(const char *name,
 						int singlethread,
 						int freezeable,
@@ -732,7 +750,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
 	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
 	if (!wq)
 		return NULL;
-
+	/* 为每一个CPU申请cpu_workqueue_struct结构 */
 	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
 	if (!wq->cpu_wq) {
 		kfree(wq);
@@ -744,7 +762,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
 	wq->singlethread = singlethread;
 	wq->freezeable = freezeable;
 	INIT_LIST_HEAD(&wq->list);
-
+	/* 系统的第一个CPU上创建工作线程 */
 	if (singlethread) {
 		cwq = init_cpu_workqueue(wq, singlethread_cpu);
 		err = create_workqueue_thread(cwq, singlethread_cpu);
@@ -752,7 +770,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
 	} else {
 		mutex_lock(&workqueue_mutex);
 		list_add(&wq->list, &workqueues);
-
+		/* 为系统的所有CPU都创建工作线程 */
 		for_each_possible_cpu(cpu) {
 			cwq = init_cpu_workqueue(wq, cpu);
 			if (err || !cpu_online(cpu))
@@ -875,9 +893,11 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
 void __init init_workqueues(void)
 {
 	cpu_populated_map = cpu_online_map;
+	/* 指定第一个CPU */
 	singlethread_cpu = first_cpu(cpu_possible_map);
 	cpu_singlethread_map = cpumask_of_cpu(singlethread_cpu);
 	hotcpu_notifier(workqueue_cpu_callback, 0);
+	/* 创建系统默认的工作队列 */
 	keventd_wq = create_workqueue("events");
 	BUG_ON(!keventd_wq);
 }
