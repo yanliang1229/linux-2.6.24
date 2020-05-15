@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "CONFIG_SCHEDSTATS",
+                "CONFIG_SMP",
+                "CONFIG_FAIR_GROUP_SCHED",
+                "CONFIG_SCHED_DEBUG",
+                "CONFIG_PREEMPT_COUNT",
+                "CONFIG_OF",
+                "CONFIG_REGULATOR",
+                "CONFIG_PM",
+                "CONFIG_PM_RUNTIME",
+                "CONFIG_IRQ_DOMAIN",
+                "CONFIG_SPARSE_IRQ",
+                "CONFIG_GENERIC_IRQ_PROBE",
+                "CONFIG_IRQ_EDGE_EOI_HANDLER"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+
+    "version": 4
+}
