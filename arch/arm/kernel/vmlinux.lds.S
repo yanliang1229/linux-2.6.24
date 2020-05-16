@@ -6,7 +6,7 @@
 #include <asm-generic/vmlinux.lds.h>
 #include <asm/thread_info.h>
 #include <asm/memory.h>
-	
+
 OUTPUT_ARCH(arm)
 ENTRY(stext)
 
@@ -64,6 +64,7 @@ SECTIONS
 		__initramfs_end = .;
 #endif
 		. = ALIGN(4096);
+		/* 存放Per-CPU的段 */
 		__per_cpu_start = .;
 			*(.data.percpu)
 			*(.data.percpu.shared_aligned)

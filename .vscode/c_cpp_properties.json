@@ -18,7 +18,8 @@
                 "CONFIG_IRQ_DOMAIN",
                 "CONFIG_SPARSE_IRQ",
                 "CONFIG_GENERIC_IRQ_PROBE",
-                "CONFIG_IRQ_EDGE_EOI_HANDLER"
+                "CONFIG_IRQ_EDGE_EOI_HANDLER",
+                "__GENERIC_PER_CPU"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",

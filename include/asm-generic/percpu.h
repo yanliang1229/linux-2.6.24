@@ -10,7 +10,11 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
 
 #define per_cpu_offset(x) (__per_cpu_offset[x])
 
-/* Separate out the type, so (int[3], foo) works. */
+/*
+ * Separate out the type, so (int[3], foo) works.
+ * 静态定义Per-CPU变量
+ * 静态定义的Per-CPU变量都会放入到“.data.percpu”的段中
+ */
 #define DEFINE_PER_CPU(type, name) \
     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
 
@@ -19,7 +23,13 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
     __typeof__(type) per_cpu__##name				\
     ____cacheline_aligned_in_smp
 
-/* var is in discarded region: offset to particular copy we want */
+/*
+ * var is in discarded region: offset to particular copy we want
+ * 获得cpu的Per-CPU变量var副本, 原理如下:
+ *    对于CPU0的变量var, 它的地址为&var + __per_cpu_offset[0],
+ *    对于CPU1的变量var, 它的地址为&var + __per_cpu_offset[1],
+ *    以此类推.
+ */
 #define per_cpu(var, cpu) (*({				\
 	extern int simple_identifier_##var(void);	\
 	RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]); }))

@@ -241,7 +241,7 @@
         "arch/tile" : true,
         "arch/um" : true,
         "arch/unicore32" : true,
-        "arch/x86": true,
+        "arch/x86": false,
         "arch/x86_64": true,
         "arch/xtensa": true,
         "arch/ppc": true,

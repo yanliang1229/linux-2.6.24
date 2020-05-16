@@ -6,7 +6,7 @@
  *  GK 2/5/95  -  Changed to support mounting root fs via NFS
  *  Added initrd & change_root: Werner Almesberger & Hans Lermen, Feb '96
  *  Moan early if gcc is old, avoiding bogus kernels - Paul Gortmaker, May '96
- *  Simplified starting of init:  Michael A. Griffith <grif@acm.org> 
+ *  Simplified starting of init:  Michael A. Griffith <grif@acm.org>
  */
 
 #include <linux/types.h>
@@ -374,10 +374,19 @@ static void __init setup_per_cpu_areas(void)
 	char *ptr;
 	unsigned long nr_possible_cpus = num_possible_cpus();
 
-	/* Copy section for each CPU (we discard the original) */
+	/*
+	 * Copy section for each CPU (we discard the original)
+	 * 静态的所有Per-CPU变量占用的内存空间页对齐, 并使用
+	 * bootm分配器分配内存，保存该变量, 类似与数组，数组的
+	 * 索引为CPU编号，数组的内容为Per-CPU变量的副本
+	 */
 	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
 	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
 
+	/*
+	 * 初始化每一个CPU上的静态定义的Per-CPU变量副本内存偏移
+	 * 系统中的每一个CPU都拷贝一份静态定义的Per-CPU变量副本
+	 */
 	for_each_possible_cpu(i) {
 		__per_cpu_offset[i] = ptr - __per_cpu_start;
 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);

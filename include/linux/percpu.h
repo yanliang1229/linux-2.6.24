@@ -12,11 +12,13 @@
 /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
 #ifndef PERCPU_ENOUGH_ROOM
 #ifdef CONFIG_MODULES
+/* 为模块使用的Per-CPU变量预留空间 */
 #define PERCPU_MODULE_RESERVE	8192
 #else
 #define PERCPU_MODULE_RESERVE	0
 #endif
 
+/* 计算出所有静态per-CPU变量占用的内存空间 */
 #define PERCPU_ENOUGH_ROOM						\
 	(__per_cpu_end - __per_cpu_start + PERCPU_MODULE_RESERVE)
 #endif	/* PERCPU_ENOUGH_ROOM */
@@ -24,6 +26,8 @@
 /*
  * Must be an lvalue. Since @var must be a simple identifier,
  * we force a syntax error here if it isn't.
+ * 访问静态定义的per-CPU变量副本
+ * 禁止抢占，防止对变量副本的并发访问
  */
 #define get_cpu_var(var) (*({				\
 	extern int simple_identifier_##var(void);	\
@@ -38,11 +42,11 @@ struct percpu_data {
 };
 
 #define __percpu_disguise(pdata) (struct percpu_data *)~(unsigned long)(pdata)
-/* 
+/*
  * Use this to get to a cpu's version of the per-cpu object dynamically
  * allocated. Non-atomic access to the current CPU's version should
  * probably be combined with get_cpu()/put_cpu().
- */ 
+ */
 #define percpu_ptr(ptr, cpu)                              \
 ({                                                        \
         struct percpu_data *__p = __percpu_disguise(ptr); \

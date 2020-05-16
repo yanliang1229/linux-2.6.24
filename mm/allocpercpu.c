@@ -75,7 +75,7 @@ int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
 {
 	cpumask_t populated = CPU_MASK_NONE;
 	int cpu;
-
+	/* 为系统中的每一个CPU都申请Per-CPU变量副本的内存空间 */
 	for_each_cpu_mask(cpu, *mask)
 		if (unlikely(!percpu_populate(__pdata, size, gfp, cpu))) {
 			__percpu_depopulate_mask(__pdata, &populated);
@@ -99,6 +99,7 @@ EXPORT_SYMBOL_GPL(__percpu_populate_mask);
 void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
 {
 	void *pdata = kzalloc(sizeof(struct percpu_data), gfp);
+	/* 产生当前Per-CPU的变量存储的特定地址 */
 	void *__pdata = __percpu_disguise(pdata);
 
 	if (unlikely(!pdata))
