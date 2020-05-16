@@ -19,7 +19,8 @@
                 "CONFIG_SPARSE_IRQ",
                 "CONFIG_GENERIC_IRQ_PROBE",
                 "CONFIG_IRQ_EDGE_EOI_HANDLER",
-                "__GENERIC_PER_CPU"
+                "__GENERIC_PER_CPU",
+                "CONFIG_REALVIEW_MPCORE"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",

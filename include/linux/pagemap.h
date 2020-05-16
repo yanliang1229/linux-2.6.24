@@ -180,14 +180,14 @@ static inline void lock_page_nosync(struct page *page)
 	if (TestSetPageLocked(page))
 		__lock_page_nosync(page);
 }
-	
+
 /*
  * This is exported only for wait_on_page_locked/wait_on_page_writeback.
  * Never use this directly!
  */
 extern void FASTCALL(wait_on_page_bit(struct page *page, int bit_nr));
 
-/* 
+/*
  * Wait for a page to be unlocked.
  *
  * This must be called with the caller "holding" the page,
@@ -200,7 +200,7 @@ static inline void wait_on_page_locked(struct page *page)
 		wait_on_page_bit(page, PG_locked);
 }
 
-/* 
+/*
  * Wait for a page to complete writeback
  */
 static inline void wait_on_page_writeback(struct page *page)

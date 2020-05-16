@@ -53,3 +53,4 @@ cscope.*
 *.orig
 *.rej
 !.vscode
+rootfs.*
