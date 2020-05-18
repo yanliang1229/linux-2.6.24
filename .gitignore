@@ -54,3 +54,4 @@ cscope.*
 *.rej
 !.vscode
 rootfs.*
+output

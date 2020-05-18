@@ -11,15 +11,15 @@ do_build_debug()
 	fi
 	case $1 in
 		-b)
-			make  versatile_defconfig
-			make  -j${CPUS}
+			make  O=output realview-smp_defconfig
+			make  O=output -j${CPUS}
 		;;
 		-c)
-			make clean
+			make -C output clean
 		;;
 		-r)
-			qemu-system-arm -M versatilepb  \
-			-kernel arch/arm/boot/zImage \
+			qemu-system-arm -M realview-eb-mpcore -cpu arm11mpcore \
+			-kernel output/arch/arm/boot/zImage \
 			-sd rootfs.ext2 \
 			-append "console=ttyAMA0,115200 init=/linuxrc root=/dev/mmcblk0 rw rootwait" \
 			-serial stdio  -show-cursor
@@ -27,7 +27,7 @@ do_build_debug()
 
 		-d)
 			qemu-system-arm -M versatilepb \
-			-kernel arch/arm/boot/zImage \
+			-kernel output/arch/arm/boot/zImage \
 			-sd rootfs.ext2 \
 			-append "console=ttyAMA0,115200 init=/linuxrc root=/dev/mmcblk0 rw rootwait" \
 			-serial stdio  -show-cursor \
