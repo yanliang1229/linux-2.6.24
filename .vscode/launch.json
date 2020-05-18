@@ -23,7 +23,7 @@
                                         "ignoreFailures": true
                                 }
                         ],
-                        "miDebuggerPath": "/usr/bin/arm-none-eabi-gdb",
+                        //"miDebuggerPath": "/usr/bin/gdb",
                         "miDebuggerServerAddress": "localhost:1234"
                 }
         ]

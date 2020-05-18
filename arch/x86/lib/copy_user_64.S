@@ -1,8 +1,8 @@
 /* Copyright 2002 Andi Kleen, SuSE Labs.
  * Subject to the GNU Public License v2.
- * 
- * Functions to copy from and to user space.		
- */		 
+ *
+ * Functions to copy from and to user space.
+ */
 
 #include <linux/linkage.h>
 #include <asm/dwarf2.h>
@@ -33,7 +33,7 @@
 	.previous
 	.endm
 
-/* Standard copy_to_user with segment limit checking */		
+/* Standard copy_to_user with segment limit checking */
 ENTRY(copy_to_user)
 	CFI_STARTPROC
 	GET_THREAD_INFO(%rax)
@@ -58,7 +58,7 @@ ENTRY(__copy_from_user_inatomic)
 	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
 	CFI_ENDPROC
 
-/* Standard copy_from_user with segment limit checking */	
+/* Standard copy_from_user with segment limit checking */
 ENTRY(copy_from_user)
 	CFI_STARTPROC
 	GET_THREAD_INFO(%rax)
@@ -71,7 +71,7 @@ ENTRY(copy_from_user)
 	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
 	CFI_ENDPROC
 ENDPROC(copy_from_user)
-	
+
 	.section .fixup,"ax"
 	/* must zero dest */
 bad_from_user:
@@ -86,19 +86,19 @@ bad_to_user:
 	CFI_ENDPROC
 END(bad_from_user)
 	.previous
-	
-		
+
+
 /*
  * copy_user_generic_unrolled - memory copy with exception handling.
  * This version is for CPUs like P4 that don't have efficient micro code for rep movsq
- * 	
- * Input:	
+ *
+ * Input:
  * rdi destination
  * rsi source
  * rdx count
  * ecx zero flag -- if true zero destination on error
  *
- * Output:		
+ * Output:
  * eax uncopied bytes or 0 if successful.
  */
 ENTRY(copy_user_generic_unrolled)
@@ -313,10 +313,10 @@ ENTRY(copy_user_generic_string)
 	movl %ecx,%r8d		/* save zero flag */
 	movl %edx,%ecx
 	shrl $3,%ecx
-	andl $7,%edx	
+	andl $7,%edx
 	jz   10f
-1:	rep 
-	movsq 
+1:	rep
+	movsq
 	movl %edx,%ecx
 2:	rep
 	movsb
@@ -344,7 +344,7 @@ ENTRY(copy_user_generic_string)
 11:	pop %rax
 7:	ret
 	CFI_ENDPROC
-END(copy_user_generic_c)
+END(copy_user_generic_string)
 
 	.section __ex_table,"a"
 	.quad 1b,3b
